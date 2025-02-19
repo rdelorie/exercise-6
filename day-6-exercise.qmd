@@ -1,7 +1,7 @@
 ---
 title: "Ecosystem Science and Sustainability 330"
 author:
-  - name: Mike Johnson
+  - name: Rachel Delorie
 format: html
 subtitle: 'Quantitative Reasoning for Ecosystem Science'
 ---
@@ -50,7 +50,14 @@ Use `dplyr` verbs to  create a data.frame of the **5** counties with the most cu
 
 (**Hint:** `filter`, `arrange`,  `slice`)
 
-```{r}
+```{r} 
+covid %>% 
+  filter(date == max(date)) %>%  # Keep only the most recent date
+  select(county, cases, deaths) %>%  # columns needed
+  arrange(desc(cases)) %>%  # Sort by highest case count
+  slice_head(n = 5)  # Get the top 5 counties
+
+# answer: Los Angeles, New York City, Miami=Dade, Cook, Maricopa
 ```
 
 ## Question 2: 
@@ -60,7 +67,14 @@ Use `dplyr` verbs to create a data.frame of the **5** states with the _most_ cas
 (**Hint:** `filter`, `group_by`, `summarize`, `arrange`, `slice`)
 
 ```{r}
+covid %>% 
+  filter(date == max(date)) %>%  # Keep only the most recent date
+  group_by(state) %>%  # Group by state
+  summarize(total_cases = sum(cases, na.rm = TRUE)) %>%  # Sum cases per state
+  arrange(desc(total_cases)) %>%  # Sort by highest case count
+  slice_head(n = 5)  # Get the top 5 states
 
+# answer: California, Texas, Florida, New York, Illinois
 ```
 
 ## Question 3: 
@@ -71,7 +85,11 @@ Use the `dplyr` verbs to report the **5** counties with the _worst_ current deat
 (**Hint:** `filter`, `mutate`, `arrange`, `slice`)
 
 ```{r}
-
+covid %>%
+  filter(date == max(date), cases > 0, county != "Unknown") %>%  # Keep most recent data & valid counties
+  mutate(death_case_ratio = 100 * (deaths / cases)) %>%  # Compute death-to-case ratio as a percentage
+  arrange(desc(death_case_ratio)) %>%  # Sort by highest ratio
+  slice_head(n = 5)  # Select top 5 counties
 ```
 
 ## Question 4: 
@@ -81,5 +99,14 @@ Use the `dplyr` verbs to report the **5** states with the _worst_ current death/
 (**Hint:** `filter`, `group_by`, `summarize`, `mutate`, `arrange`, `slice`)
 
 ```{r}
-
+covid %>%
+  filter(date == max(date), cases > 0) %>%  # Keep only the most recent data & valid cases
+  group_by(state) %>%  # Group by state
+  summarize(
+    total_cases = sum(cases, na.rm = TRUE),  # Sum cases per state
+    total_deaths = sum(deaths, na.rm = TRUE)  # Sum deaths per state
+  ) %>%
+  mutate(death_case_ratio = 100 * (total_deaths / total_cases)) %>%  # Compute death-to-case ratio (%)
+  arrange(desc(death_case_ratio)) %>%  # Sort by highest ratio
+  slice_head(n = 5)  # Select top 5 states
 ```
